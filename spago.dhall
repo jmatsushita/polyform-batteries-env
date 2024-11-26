@@ -8,7 +8,6 @@
   , "polyform"
   , "polyform-batteries-core"
   , "prelude"
-  , "psci-support"
   , "typelevel-prelude"
   ]
 , packages = ./packages.dhall

@@ -20,7 +20,6 @@ import Data.Maybe (Maybe(..))
 import Polyform.Batteries (Validator', invalid) as Batteries
 import Polyform.Batteries.Env.Types (Env, Key, Value, Validator, fromValidator)
 import Polyform.Validator (liftFn, liftFnMV, liftFnV, runValidator)
-import Type.Proxy (Proxy(..))
 import Type.Row (type (+))
 
 type Pure e a b = Validator Identity e a b
@@ -29,8 +28,6 @@ type Field m e b = Batteries.Validator' m e (Maybe String) b
 
 type FieldValue m e b = Batteries.Validator' m e String b
 
-_missingValue = Proxy :: Proxy "missingValue"
-
 type MissingValue e = (missingValue :: Unit | e)
 
 value :: forall e m. Applicative m => Field m (MissingValue + e) String
@@ -38,7 +35,7 @@ value =
   liftFnV
     $ case _ of
         Just v -> pure v
-        Nothing -> Batteries.invalid _missingValue msg unit
+        Nothing -> Batteries.invalid @"missingValue" msg unit
   where
   msg _ = "Missing value"
 
@@ -68,8 +65,6 @@ optionalValue fieldValidator =
     Just v -> runValidator (Just <$> fieldValidator) v
 
 -- | Some ad hoc encoding for booleans and arrays.
-_booleanExpected = Proxy :: Proxy "booleanExpected"
-
 type BooleanExpected e = (booleanExpected :: Value | e)
 
 boolean :: forall e m. Applicative m => FieldValue m (booleanExpected :: Value | e) Boolean
@@ -77,6 +72,6 @@ boolean =
   liftFnV case _ of
     "true" -> pure true
     "false" -> pure false
-    v -> Batteries.invalid _booleanExpected msg v
+    v -> Batteries.invalid @"booleanExpected" msg v
   where
   msg v = "Boolean expected but got: " <> v
